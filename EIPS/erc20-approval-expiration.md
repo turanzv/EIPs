@@ -25,20 +25,20 @@ There have been many similar incidents to the Transit Swap attack. Security audi
 
 ## Specification
 
-Validity limits are introduced by expanding `_allowance()` into a struct `Allowance{}` and adding the `_expireAt` timestamp.
+Validity limits are introduced by expanding `_allowance()` into a struct `Allowance{}` and adding the `_expiration` timestamp.
 
-The `_expireAt` parameter is set via a new input `period` into the `approve()` method.
+The `_expiration` parameter is set via a new input `period` into the `approve()` method.
 
 A `DEFAULT_PERIOD` constant is added for legacy implementations that do not specify the `period` parameter.
 
-A separate approval method with the header `approve(address spender, uint256 amount, uint256 period)` modifies the `_expireAt` value for existing approvals.
+A separate approval method with the header `approve(address spender, uint256 amount, uint256 period)` modifies the `_expiration` value for existing approvals.
 
 ```solidity
 contract ERC20 is Context, IERC20, IERC20Metadata {
 
     struct Allowance {
         uint256 _amount;
-        uint256 _expireAt;
+        uint256 _expiration;
     }
 
     mapping(address => uint256) private _balances;
@@ -77,12 +77,12 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         require(spender != address(0), "ERC20: approve to the zero address");
 
         _allowances[owner][spender]._amount = amount;
-        _allowances[owner][spender]._expireAt = block.timestamp + period;
+        _allowances[owner][spender]._expiration = block.timestamp + period;
         emit Approval(owner, spender, amount);
     }
 ```
 
-Transactions using the `transferFrom()` method will be checked against `_expireAt` through the `_spendAllowance()`. Transactions that take place after the alloted time period will fail.
+Transactions using the `transferFrom()` method will be checked against `_expiration` through the `_spendAllowance()`. Transactions that take place after the alloted time period will fail.
 
 ```solidity
     function transferFrom(
@@ -102,25 +102,25 @@ Transactions using the `transferFrom()` method will be checked against `_expireA
         uint256 amount
     ) internal virtual {
         Allowance memory currentAllowance = _allowances[owner][spender];
-        require(block.timestamp <= currentAllowance._expireAt, "Approval expired!");
+        require(block.timestamp <= currentAllowance._expiration, "Approval expired!");
         if (currentAllowance._amount != type(uint256).max) {
             require(currentAllowance._amount >= amount, "ERC20: insufficient allowance");
             unchecked {
-                _approve(owner, spender, currentAllowance._amount - amount, currentAllowance._expireAt - block.timestamp);
+                _approve(owner, spender, currentAllowance._amount - amount, currentAllowance._expiration - block.timestamp);
             }
         }
     }
 ```
 
-The `allowance()`, `increaseAllowance()`, and `decreaseAllowance()` method has been modified to accommodate the new features. `allowanceExpire()` has been added to query the expiry date.
+The `allowance()`, `increaseAllowance()`, and `decreaseAllowance()` method has been modified to accommodate the new features. `allowanceExpiration()` has been added to query the expiry date.
 
 ```solidity
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
         return _allowances[owner][spender]._amount;
     }
 
-    function allowanceExpireAt(address owner, address spender) public view returns (uint256) {
-        return _allowances[owner][spender]._expireAt;
+    function allowanceexpiration(address owner, address spender) public view returns (uint256) {
+        return _allowances[owner][spender]._expiration;
     }
     
     
@@ -167,11 +167,11 @@ The `Allowance{}` struct is created in order to add expiration functionality to 
 
 At the same time, this standard is absolutely compatible with the traditional ERC20 standard.  `DEFAULT_PERIOD` is added so that the original `approve(address spender, uint256 amount)` method header can remain for backwards compatibility and ease of programming. `DEFAULT_PERIOD` can be set to a constant or variable according to the developer's needs.
 
-A separate approval method with the header `approve(address spender, uint256 amount, uint256 period)` has been introduced to allow users to customize the `_expireAt` value of the approval.
+A separate approval method with the header `approve(address spender, uint256 amount, uint256 period)` has been introduced to allow users to customize the `_expiration` value of the approval.
 
 The internal method `_spendAllowance()` is introduced for code cleanliness with the function of checking the allowance amount and expiration.
 
-The `allowance()` method has been modified to accommodate the functionality described  in this EIP. `allowanceExpire()` has been added query the allowance expiration date.
+The `allowance()` method has been modified to accommodate the functionality described  in this EIP. `allowanceExpiration()` has been added query the allowance expiration date.
 
 ## Backwards Compatibility
 This standard is compatible with the ERC-20, ERC-721 and ERC-1155 standards. Tokens issued in the form of proxy contracts can be updated to comply with this EIP.
