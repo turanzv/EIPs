@@ -170,9 +170,9 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     string private _symbol;
 
     uint256 private constant DEFAULT_PERIOD = 86400 * 30;
-    mapping(address => mapping(address => uint256)) private _expireAt;
+    mapping(address => mapping(address => uint256)) private _expiration;
 
-    event AllowanceExpireTimeUpdated(address indexed owner, address indexed spender, uint256 value, uint256 expireAt);
+    event AllowanceExpirationUpdated(address indexed owner, address indexed spender, uint256 value, uint256 expiration);
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -255,8 +255,8 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         return _allowances[owner][spender];
     }
 
-    function allowanceExpireAt(address owner, address spender) public view returns (uint256) {
-        return _expireAt[owner][spender];
+    function allowanceExpiration(address owner, address spender) public view returns (uint256) {
+        return _expiration[owner][spender];
     }
 
     /**
@@ -478,9 +478,9 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         require(spender != address(0), "ERC20: approve to the zero address");
 
         _allowances[owner][spender] = amount;
-        _expireAt[owner][spender] = block.timestamp + period;
+        _expiration[owner][spender] = block.timestamp + period;
         emit Approval(owner, spender, amount);
-        emit AllowanceExpireTimeUpdated(owner, spender, amount, _expireAt[owner][spender]);
+        emit AllowanceExpirationUpdated(owner, spender, amount, _expiration[owner][spender]);
     }
 
     /**
@@ -497,12 +497,12 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         uint256 amount
     ) internal virtual {
         uint256 currentAllowance = _allowances[owner][spender];
-        uint256 currentExpireAt = _expireAt[owner][spender];
-        require(block.timestamp <= currentExpireAt, "Approval expired!");
+        uint256 currentExpiration = _expiration[owner][spender];
+        require(block.timestamp <= currentExpiration, "Approval expired!");
         if (currentAllowance != type(uint256).max) {
             require(currentAllowance >= amount, "ERC20: insufficient allowance");
             unchecked {
-                _approve(owner, spender, currentAllowance - amount, currentExpireAt - block.timestamp);
+                _approve(owner, spender, currentAllowance - amount, currentExpiration - block.timestamp);
             }
         }
     }
