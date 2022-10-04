@@ -175,6 +175,8 @@ A separate approval method with the header `approve(address spender, uint256 amo
 
 The internal method `_spendAllowance()` is introduced for code cleanliness. In this method we will check not only the allowance amount but also the allowance authorization for expiration.
 
+In addition, we have added modified the `allowance()` method to accommodate the new features. And for the sake of operational convenience, we added `allowanceExpire()` to facilitate users and developers to query and call the expiration date of allowance.
+
 ## Backwards Compatibility
 This standard is compatible with current ERC-20, ERC-721 and ERC-1155 standards. More importantly, for Tokens issued in the form of a proxy contract, it is possible to directly upgrade the implementation to be compatible with this standard.
 
