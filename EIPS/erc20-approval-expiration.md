@@ -2,7 +2,7 @@
 eip: <to be assigned>
 title: Approval Expirations for ERC20 Tokens
 description: This EIP introduces a standardized way for users to set expiration limits on ERC-20 token approvals.
-author: 翟福豪 Jeff Hall <642706757@qq.com>, Xavi <xuyf0526@live.com>, Turan Vural <@turanzv>
+author: Go+ Security <@GoPlusSecurity>, Jeff Hall <@JeffHal25193696>, Xavi <@XaaaaavitheFool>, Turan Vural <@turanzv>
 discussions-to: <URL>
 status: Draft
 type: Standards Track
@@ -112,11 +112,7 @@ Transactions using the `transferFrom()` method will be checked against `_expireA
     }
 ```
 
-BELOW NEEDS EDITING
----
-In addition, we have added modified the `allowance()` method to accommodate the new features. And for the sake of operational convenience, we added `allowanceExpire()` to facilitate users and developers to query and call the expiration date of allowance.
-
-Since all approval-related operations should produce the same effect as `approve()`, `increaseAllowance()` and `decreaseAllowance()` have been changed accordingly.
+The `allowance()`, `increaseAllowance()`, and `decreaseAllowance()` method has been modified to accommodate the new features. `allowanceExpire()` has been added to query the expiry date.
 
 ```solidity
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
@@ -164,30 +160,27 @@ Since all approval-related operations should produce the same effect as `approve
     }
 ```
 
-Based on the above changes, we have successfully added an expiration date to the ERC20 token approvals. And users can freely update their allowance validity at any time by repeatedly calling the approve(address spender, uint256 amount, uint256 period) method.
+The above modifications adds an expiration date to ERC20 token approvals. Users can freely update their allowance validity at any time by calling `approve(address spender, uint256 amount, uint256 period)`.
 
 ## Rationale
-The `Allowance{}` struct is created in order to add expiration functionality ot `original_allowance()`.
+The `Allowance{}` struct is created in order to add expiration functionality to `original_allowance()`.
 
-At the same time, this standard is absolutely compatible with the traditional ERC20 standard. So we will keep the original `approve(address spender, uint256 amount)` method completely without adding any input, so that we need to add a default value `DEFAULT_PERIOD` as the default value of period in `_approve(address owner, address spender, uint256 amount, uint256 period)`. `DEFAULT_PERIOD` can be set to a constant or variable according to the developer's needs.
+At the same time, this standard is absolutely compatible with the traditional ERC20 standard.  `DEFAULT_PERIOD` is added so that the original `approve(address spender, uint256 amount)` method header can remain for backwards compatibility and ease of programming. `DEFAULT_PERIOD` can be set to a constant or variable according to the developer's needs.
 
-A separate approval method with the header `approve(address spender, uint256 amount, uint256 period)` has been introduced to allow users to customize the _expireAt of this approval in order to accommodate the user's need for flexibility in the validity of the allowance.
+A separate approval method with the header `approve(address spender, uint256 amount, uint256 period)` has been introduced to allow users to customize the `_expireAt` value of the approval.
 
-The internal method `_spendAllowance()` is introduced for code cleanliness. In this method we will check not only the allowance amount but also the allowance authorization for expiration.
+The internal method `_spendAllowance()` is introduced for code cleanliness with the function of checking the allowance amount and expiration.
 
-In addition, we have added modified the `allowance()` method to accommodate the new features. And for the sake of operational convenience, we added `allowanceExpire()` to facilitate users and developers to query and call the expiration date of allowance.
+The `allowance()` method has been modified to accommodate the functionality described  in this EIP. `allowanceExpire()` has been added query the allowance expiration date.
 
 ## Backwards Compatibility
-This standard is compatible with current ERC-20, ERC-721 and ERC-1155 standards. More importantly, for Tokens issued in the form of a proxy contract, it is possible to directly upgrade the implementation to be compatible with this standard.
-
-## Test Cases
-Test cases for an implementation are mandatory for EIPs that are affecting consensus changes.  If the test suite is too large to reasonably be included inline, then consider adding it as one or more files in `../assets/eip-####/`.
+This standard is compatible with the ERC-20, ERC-721 and ERC-1155 standards. Tokens issued in the form of proxy contracts can be updated to comply with this EIP.
 
 ## Reference Implementation
-An optional section that contains a reference/example implementation that people can use to assist in understanding or implementing this specification.  If the implementation is too large to reasonably be included inline, then consider adding it as one or more files in `../assets/eip-####/`.
+Implementation can be referenced in `../assets/eip-####/`.
 
 ## Security Considerations
-When upgrading a standard ERC20-based proxy contract to this standard, attention should be paid to the storage location.
+When upgrading a standard ERC20-based proxy contract to this standard, attention should be paid to the location of assets.
 
 ## Copyright
 Copyright and related rights waived via [CC0](../LICENSE.md).
